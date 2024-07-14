@@ -62,7 +62,7 @@ impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
 
     fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
-        if slice.len() > 3 || slice.len() < 3 {
+        if slice.len() != 3 {
             return Err(IntoColorError::BadLen);
         }
         let arr = [slice[0], slice[1], slice[2]]; /* This will always work because i already checked for the length */
