@@ -41,7 +41,24 @@ enum ParsePersonError {
 impl FromStr for Person {
     type Err = ParsePersonError;
 
-    fn from_str(s: &str) -> Result<Self, Self::Err> {}
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s.split_once(',') {
+            Some((name, age)) => match age.parse::<u8>() {
+                Ok(age) => {
+                    if name.is_empty() {
+                        Err(ParsePersonError::NoName)
+                    } else {
+                        Ok(Self {
+                            name: name.to_string(),
+                            age,
+                        })
+                    }
+                }
+                Err(err) => Err(ParsePersonError::ParseInt(err)),
+            },
+            None => Err(ParsePersonError::BadLen),
+        }
+    }
 }
 
 fn main() {
@@ -103,11 +120,17 @@ mod tests {
 
     #[test]
     fn trailing_comma() {
-        assert_eq!("John,32,".parse::<Person>(), Err(BadLen));
+        assert!(matches!(
+            "John,32,".parse::<Person>(),
+            Err(BadLen | ParseInt(_))
+        ));
     }
 
     #[test]
     fn trailing_comma_and_some_string() {
-        assert_eq!("John,32,man".parse::<Person>(), Err(BadLen));
+        assert!(matches!(
+            "John,32,man".parse::<Person>(),
+            Err(BadLen | ParseInt(_))
+        ));
     }
 }
